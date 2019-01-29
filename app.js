@@ -1,4 +1,4 @@
-var Chess = require('chess.js').Chess;
+var Chess = require("chess.js").Chess;
 var chess = new Chess();
 
 while (!chess.game_over()) {
@@ -7,4 +7,4 @@ while (!chess.game_over()) {
   chess.move(move);
 }
 console.log(chess.pgn());
-console.log(chess.ascii())
+console.log(chess.ascii());
