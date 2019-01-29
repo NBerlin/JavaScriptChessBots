@@ -1,0 +1,22 @@
+{
+  "name": "javascriptbots",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NBerlin/JavaScriptChessBots.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/NBerlin/JavaScriptChessBots/issues"
+  },
+  "homepage": "https://github.com/NBerlin/JavaScriptChessBots#readme",
+  "dependencies": {
+    "chess.js": "^0.10.2"
+  }
+}
