@@ -68,7 +68,7 @@ const stupidman = {
   },
   name: "stopid"
 };
-
+/*
 const player1 = moveman({ color: "w" });
 const player2 = stupidman;
 
@@ -94,3 +94,5 @@ if (chess.in_checkmate()) {
 } else {
   console.log("It was a draw");
 }
+*/
+module.exports = moveman;
