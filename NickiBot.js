@@ -1,5 +1,6 @@
 var Chess = require('chess.js').Chess;
-var pieceValues = {p:1,n:3,b:3,r:5,q:9,k:10000} 
+var chess = new Chess();
+var pieceValues = {p:1,n:3,b:3,r:5,q:9,k:40} 
 class NickiBot{
     constructor(color){
         this.color=color;
@@ -31,28 +32,44 @@ class NickiBot{
         let blackValue=blackPieces.reduce((bValue,b2Value)=>bValue+b2Value.value,0);
         return whiteValue-blackValue;
     }   
-    makeMove(board){
-        
+    makeMove(fen){
+        chess.load(fen);
+        let board=chess;
         let bestMove=-1000;
         const moves=board.moves();
         const currentAdvantage = this.getAdvantage(board);
         let bestMoveIndex=0;
         for(let i =0;i<moves.length;i++){
-            let tempBoard=board;
+            chess.load(fen);
+            let tempBoard=chess;
             tempBoard.move(moves[i]);
-            const moveValue=this.getAdvantage(tempBoard)-currentAdvantage;
-            if(tempBoard.in_check()){
+            let moveValue=this.getAdvantage(tempBoard)-currentAdvantage;
+            if(tempBoard.in_checkmate()){
                 bestMoveIndex=i;
                 break;
             }
-            else if(moveValue>bestMove){
+        
+            if(moveValue>bestMove){
                 bestMove=moveValue
                 bestMoveIndex=i;
+            }            
+        }
+       
+        chess.load(fen);
+        console.log(bestMove);
+
+        if(bestMove===0){
+            let allTheMoves=chess.moves();
+            console.log(allTheMoves);
+            allTheMoves=allTheMoves.filter(word=>word.length<3);
+            if(allTheMoves.length>=1){
+                return allTheMoves[Math.floor(Math.random()*allTheMoves.length)];
             }
             
         }
-        return board.moves()[bestMoveIndex];
+        return chess.moves()[bestMoveIndex];
         
+  
     }
 };
 module.exports = NickiBot;
