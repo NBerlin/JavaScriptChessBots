@@ -27,18 +27,20 @@ const movesThatGainPoints = (state, color) => {
   });
 };
 
+const moveThatsMateInOne = state =>
+  state.moves().find(move => {
+    state.move(move);
+    const isDone = chs.in_checkmate();
+    state.undo();
+    return isDone;
+  });
+
+const canMateInOne = moveThatsMateInOne;
+const seeFreePiece = () => false;
+
 const moveman = ({ color = "w", name = "oskar" }) => ({
   makeMove: fen => {
     chs.load(fen);
-    const moveThatsMateInOne = () =>
-      chs.moves().find(move => {
-        chs.move(move);
-        const isDone = chs.in_checkmate();
-        chs.undo();
-        return isDone;
-      });
-    const canMateInOne = moveThatsMateInOne;
-    const seeFreePiece = () => false;
     const justMakeTheBestMove = () => {
       const moves = movesThatGainPoints(chs, "w");
       if (moves.length !== 0) {
