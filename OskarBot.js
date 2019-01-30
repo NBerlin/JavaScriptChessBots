@@ -44,7 +44,11 @@ const moveman = ({ color = "w", name = "oskar" }) => ({
       if (moves.length !== 0) {
         return moves[Math.floor(Math.random() * moves.length)];
       } else {
-        return chs.moves()[Math.floor(Math.random() * chs.moves().length)];
+        const pawns = chs.moves().filter(m => m.length < 3);
+        if (pawns.length > 0) {
+          return pawns[Math.floor(Math.random() * pawns.length)];
+        }
+        return chs.moves()[0];
       }
     };
 
@@ -68,31 +72,33 @@ const stupidman = {
   },
   name: "stopid"
 };
-/*
-const player1 = moveman({ color: "w" });
-const player2 = stupidman;
+
+const Nickiklass = require("./NickiBot");
+const nicki = new Nickiklass();
+const oskar = moveman({ color: "b" });
 
 while (!chess.game_over()) {
   const currentFen = chess.fen();
   let pMove;
 
   if (chess.turn() == "w") {
-    pMove = player1.makeMove(currentFen);
+    pMove = nicki.makeMove(currentFen);
   } else {
-    pMove = player2.makeMove(currentFen);
+    pMove = oskar.makeMove(currentFen);
   }
   chess.move(pMove);
+  console.log(chess.ascii());
 }
 
 console.log(chess.ascii());
 if (chess.in_checkmate()) {
   if (chess.turn === "w") {
-    console.log("Winner: " + player2.name());
+    console.log("Winner: " + oskar.name());
   } else {
-    console.log("Winner: " + player1.name());
+    console.log("Winner: " + nicki.name());
   }
 } else {
   console.log("It was a draw");
 }
-*/
+
 module.exports = moveman;
