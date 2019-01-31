@@ -1,14 +1,16 @@
 var Chess = require("chess.js").Chess;
 var chess = new Chess();
-const NickiBot = require("./NickiBot.js");
-let player1 = new NickiBot("w");
-let player2 = new NickiBot("b");
+
+const BotOne = require("./" + process.argv[2]);
+const BotTwo = require("./" + process.argv[3]);
+let player1 = new BotOne();
+let player2 = new BotTwo();
+
 while (!chess.game_over()) {
-  temp = chess;
   if (chess.turn() == "w") {
-    chess.move(player1.makeMove(temp));
+    chess.move(player1.makeMove(new Chess(chess.fen())));
   } else {
-    chess.move(player2.makeMove(temp));
+    chess.move(player2.makeMove(new Chess(chess.fen())));
   }
 }
 console.log(chess.ascii());
