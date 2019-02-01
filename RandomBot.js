@@ -4,7 +4,7 @@ class RandomBot {
   }
 
   name() {
-    return "RandomBot: {this.color}";
+    return `RandomBot: ${this.color}`;
   }
 
   makeMove(chess) {
