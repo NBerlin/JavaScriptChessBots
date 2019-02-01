@@ -38,7 +38,7 @@ const seeFreePiece = () => false
 const moveman = ({ color = 'w', name = 'oskar' }) => ({
   makeMove: chess => {
     const justMakeTheBestMove = () => {
-      const moves = movesThatGainPoints(chess, 'w')
+      const moves = movesThatGainPoints(chess, color)
       if (moves.length !== 0) {
         return moves[Math.floor(Math.random() * moves.length)]
       } else {
