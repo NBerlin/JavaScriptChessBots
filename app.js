@@ -3,8 +3,8 @@ var chess = new Chess();
 
 const BotOne = require("./" + process.argv[2]);
 const BotTwo = require("./" + process.argv[3]);
-let player1 = new BotOne();
-let player2 = new BotTwo();
+let player1 = new BotOne("w");
+let player2 = new BotTwo("b");
 
 while (!chess.game_over()) {
   if (chess.turn() == "w") {
