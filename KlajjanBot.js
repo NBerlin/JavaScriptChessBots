@@ -4,13 +4,14 @@ class KlajjanBot {
   }
 
   name() {
-    return "KlajjanBot: {this.color}";
+    return `KlajjanBot: ${this.color}`;
   }
 
   makeMove(chess) {
     const moves = chess.moves();
-    return moves[Math.floor(Math.random() * moves.length)];
+    return moves[0];
   }
 }
 
-module.exports = KlajjanBot;
+const create = color => new KlajjanBot(color);
+module.exports = create;
