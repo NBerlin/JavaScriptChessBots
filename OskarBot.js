@@ -34,6 +34,9 @@ const moveThatsMateInOne = state =>
 
 const canMateInOne = moveThatsMateInOne
 const seeFreePiece = () => false
+const seeFreeCheck = () => false
+const notStuckInLoop = () => false
+const doFreeCheck = () => false
 
 const moveman = ({ color = 'w', name = 'oskar' }) => ({
   makeMove: chess => {
@@ -54,8 +57,12 @@ const moveman = ({ color = 'w', name = 'oskar' }) => ({
       return moveThatsMateInOne(chess)
     }
 
-    if (seeFreePiece()) {
-      return takeFreePiece()
+    if (seeFreePiece(chess)) {
+      return takeFreePiece(chess)
+    }
+
+    if (seeFreeCheck(chess) && notStuckInLoop(chess)) {
+      return doFreeCheck(chess)
     }
 
     return justMakeTheBestMove()
