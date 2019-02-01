@@ -10,6 +10,7 @@ while (!chess.game_over()) {
   } else {
     chess.move(player2.makeMove(new Chess(chess.fen())))
   }
+  console.log(chess.ascii())
 }
 
 console.log(chess.ascii())
