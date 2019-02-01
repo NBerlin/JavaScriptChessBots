@@ -54,8 +54,8 @@ const moveman = ({ color = "w", name = "oskar" }) => ({
       }
     };
 
-    if (canMateInOne()) {
-      return moveThatsMateInOne();
+    if (canMateInOne(chs)) {
+      return moveThatsMateInOne(chs);
     }
 
     if (seeFreePiece()) {
