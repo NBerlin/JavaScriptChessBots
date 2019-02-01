@@ -9,7 +9,8 @@ class KlajjanBot {
 
   makeMove(chess) {
     const moves = chess.moves()
-    return moves[0]
+
+    return moves[Math.floor(Math.random() * moves.length)]
   }
 }
 
