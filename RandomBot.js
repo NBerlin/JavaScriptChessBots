@@ -13,4 +13,5 @@ class RandomBot {
   }
 }
 
-module.exports = RandomBot;
+const create = color => new RandomBot(color);
+module.exports = create;
