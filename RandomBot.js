@@ -1,6 +1,10 @@
-class KlajjanBot {
+class RandomBot {
+  constructor(color) {
+    this.color = color;
+  }
+
   name() {
-    return "KlajjanBot";
+    return "RandomBot: {this.color}";
   }
 
   makeMove(chess) {
@@ -9,4 +13,4 @@ class KlajjanBot {
   }
 }
 
-module.exports = KlajjanBot;
+module.exports = RandomBot;
