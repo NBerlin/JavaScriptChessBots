@@ -19,7 +19,9 @@ class KlajjanBot {
 
   getTakeValue(chess, move) {
     const chess_square = chess.get(this.getSquare(move))
-    if (!chess_square) {
+    if (move == 'O-O' || move == 'O-O-O') {
+      return 2
+    } else if (!chess_square) {
       return 0
     } else {
       return points[chess_square.type]
