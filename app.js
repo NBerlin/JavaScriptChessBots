@@ -18,10 +18,10 @@ while (!chess.game_over()) {
 
 console.log(chess.ascii())
 if (chess.in_checkmate()) {
-  if (chess.turn != 'w') {
-    console.log('Winner: ' + player2.name())
-  } else {
+  if (chess.turn() != 'w') {
     console.log('Winner: ' + player1.name())
+  } else {
+    console.log('Winner: ' + player2.name())
   }
 } else {
   console.log('It was a draw')

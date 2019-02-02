@@ -11,10 +11,10 @@ class KlajjanBot {
 
   getSquare(move) {
     return move
+      .replace('+', '')
+      .split('=')[0]
       .split('x')
       .slice(-1)[0]
-      .replace('+', '')
-      .slice(-2)
   }
 
   getTakeValue(chess, move) {
