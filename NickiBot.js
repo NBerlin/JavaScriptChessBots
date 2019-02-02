@@ -42,41 +42,54 @@ class NickiBot {
       (bValue, b2Value) => bValue + b2Value.value,
       0
     )
-    return whiteValue - blackValue
+    if(this.color='w'){
+      return whiteValue - blackValue
+    }
+    else{
+      return blackValue -whiteValue
+    }
+    
   }
-  makeMove(fen) {
-    chess.load(fen)
-    let board = chess
-    let bestMove = -1000
-    const moves = board.moves()
-    const currentAdvantage = this.getAdvantage(board)
-    let bestMoveIndex = 0
-    for (let i = 0; i < moves.length; i++) {
+  testMoves(fen){
+    chess.load(fen);
+    const currentAdvantage = this.getAdvantage(chess);
+    let bestMoveCurrently =0;
+    let bestMoveIndexCurrently =0;
+    let movesAva = chess.moves();
+    for(let index =0;index<movesAva.length;index++){
       chess.load(fen)
-      let tempBoard = chess
-      tempBoard.move(moves[i])
-      let moveValue = this.getAdvantage(tempBoard) - currentAdvantage
-      if (tempBoard.in_checkmate()) {
-        bestMoveIndex = i
-        break
+      chess.move(movesAva[index])
+      let moveValue = (this.getAdvantage(chess)-currentAdvantage)
+      if (chess.in_checkmate()) {
+        return [index,10000000000];
       }
-
-      if (moveValue > bestMove) {
-        bestMove = moveValue
-        bestMoveIndex = i
+      if (moveValue > bestMoveCurrently) {
+        bestMoveCurrently = moveValue;
+        bestMoveIndexCurrently = index;
       }
     }
+    return [bestMoveIndexCurrently,bestMoveCurrently];
 
-    chess.load(fen)
-
-    if (bestMove === 0) {
-      let allTheMoves = chess.moves()
-      allTheMoves = allTheMoves.filter(word => word.length < 3)
-      if (allTheMoves.length >= 1) {
-        return allTheMoves[Math.floor(Math.random() * allTheMoves.length)]
-      }
+  }
+  makeZeroValueMove(fen){
+    chess.load(fen);
+    let allTheMoves = chess.moves()
+    allTheMoves = allTheMoves.filter(word => word.length < 3)
+    if (allTheMoves.length >= 1) {
+      return allTheMoves[Math.floor(Math.random() * allTheMoves.length)]
     }
-    return chess.moves()[bestMoveIndex]
+    return chess.moves()[Math.floor(Math.random() * chess.moves().length)]
+  }
+  makeMove(chessCopy) {
+    let fen = chessCopy.fen();
+    let bestMove=this.testMoves(fen);
+
+    if (bestMove[1] === 0) {
+      return this.makeZeroValueMove(fen);
+    }
+    
+    return chessCopy.moves()[bestMove[0]]
   }
 }
-module.exports = NickiBot
+const create = color => new NickiBot(color)
+module.exports = create
