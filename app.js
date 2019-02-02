@@ -12,6 +12,7 @@ while (!chess.game_over()) {
   }
   if (time == 'slow') {
     console.log(chess.ascii())
+    console.log('Board value: ')
     for (var i = 1000000000 - 1; i >= 0; i--) {}
   }
 }

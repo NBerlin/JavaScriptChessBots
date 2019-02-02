@@ -17,19 +17,24 @@ class KlajjanBot {
       .slice(-1)[0]
   }
 
-  getTakeValue(chess, move) {
+  getMoveValue(chess, move) {
     const chess_square = chess.get(this.getSquare(move))
-    if (move == 'O-O' || move == 'O-O-O') {
-      return 2
-    } else if (!chess_square) {
-      return 0
-    } else {
-      return points[chess_square.type]
+    let value = 0
+    if (move.includes('=')) {
+      value += points[move.split('=')[1]]
     }
+    if (move == 'O-O' || move == 'O-O-O') {
+      value += 2
+    }
+    if (chess_square) {
+      value += points[chess_square.type]
+    }
+
+    return value
   }
 
   getValue(chess, move) {
-    let value = this.getTakeValue(chess, move)
+    let value = this.getMoveValue(chess, move)
 
     chess.move(move)
     if (chess.in_checkmate()) {
@@ -37,7 +42,7 @@ class KlajjanBot {
     } else {
       value -= chess
         .moves()
-        .map(move => this.getTakeValue(chess, move))
+        .map(move => this.getMoveValue(chess, move))
         .reduce((v1, v2) => Math.max(v1, v2), 0)
     }
     chess.undo()
@@ -45,8 +50,14 @@ class KlajjanBot {
     return value
   }
 
-  getBetterMove(m1, m2) {
-    return m1.value >= m2.value ? m1 : m2
+  reducerMethod(list, obj, comp) {
+    if (list.length == 0 || comp(list[0], obj) < 0) {
+      return [obj]
+    } else if (comp(list[0], obj) == 0) {
+      list.push(obj)
+    }
+
+    return list
   }
 
   onlyKingMoves(moves) {
@@ -64,12 +75,13 @@ class KlajjanBot {
       .moves()
       .map(move => ({ move: move, value: this.getValue(chess, move) }))
 
-    const best = moves.reduce((move1, move2) =>
-      this.getBetterMove(move1, move2)
+    const filtered_moves = this.filterKings(
+      moves.reduce(
+        (m1, m2) => this.reducerMethod(m1, m2, (o1, o2) => o1.value - o2.value),
+        []
+      )
     )
-    let filtered_moves = this.filterKings(
-      moves.filter(move => move.value == best.value)
-    )
+
     return filtered_moves[Math.floor(filtered_moves.length * Math.random())]
       .move
   }
