@@ -50,57 +50,41 @@ class NickiBot {
     }
     
   }
-  testMoves(fen){
-    chess.load(fen);
-    const currentAdvantage = this.getAdvantage(chess);
-    let bestMoveCurrently =-10;
-    let bestMoveIndexCurrently =0;
-    let movesAva = chess.moves();
-    for(let index =0;index<movesAva.length;index++){
-      chess.load(fen)
-      chess.move(movesAva[index])
-      let moveValue = (this.getAdvantage(chess)-currentAdvantage)
-      if (chess.in_checkmate()) {
-        return [index,10000000000];
-      }
-      if (moveValue > bestMoveCurrently) {
-        let tempFen=chess.fen();
-        let tempMoves=chess.moves();
-        let secondCurrentAdvantage=this.getAdvantage(chess);
-      
-        let biggestSecondMoveValue=0;
-        for(let i = 0;i<tempMoves.length;i++){
-          chess.load(tempFen)
-          chess.move(tempMoves[i]);
-          let secondMoveValue=((this.getAdvantage(chess)-secondCurrentAdvantage)+moveValue);
-          if(secondMoveValue<biggestSecondMoveValue){
-            biggestSecondMoveValue=secondMoveValue;
-          }
-        }
-        if(biggestSecondMoveValue>bestMoveCurrently){
-          bestMoveCurrently = moveValue;
-          bestMoveIndexCurrently = index;
-        }
-    
-      }
-    }
-    console.log(bestMoveCurrently)
-    return [bestMoveIndexCurrently,bestMoveCurrently];
+  testMoves(chessCopy){
+    this.testTwoMoves(chessCopy);
 
   }
-  makeZeroValueMove(fen){
-    chess.load(fen);
-    let allTheMoves = chess.moves()
-    allTheMoves = allTheMoves.filter(word => word.length < 3)
-    if (allTheMoves.length >= 1) {
-      return allTheMoves[Math.floor(Math.random() * allTheMoves.length)]
+  testTwoMoves(chessCopy){
+    let advBeforeMove = this.getAdvantage(chessCopy);
+    let avaMoves = chessCopy.moves();
+    let valueOfFirstMoves=avaMoves.map(move=>this.testFirstMoves(move,chessCopy,advBeforeMove))
+    .map((v,i)=>({value:v,index:i}))
+    .reduce((a,b)=>(a.value>=b.value?a:b));
+    return valueOfFirstMoves;
+    
+  }
+  testFirstMoves(move,chessCopy,advBeforeMove){
+    chessCopy.move(move);
+    if(chessCopy.in_checkmate()){
+      return 1000000000000000;
     }
-    return chess.moves()[Math.floor(Math.random() * chess.moves().length)]
+    let moves = chessCopy.moves()
+    .map(move2=>this.testSecondMoves(move2,chessCopy,advBeforeMove))
+    .reduce((a, b) =>(a<b ? a : b));
+    chessCopy.undo();
+    return moves;
+  }
+  testSecondMoves(move2,chessCopy,advBeforeMove){
+    chessCopy.move(move2);
+    let returnValue = (this.getAdvantage(chessCopy)-advBeforeMove);
+    chessCopy.undo();
+    return returnValue;
+  }
+  makeZeroValueMove(fen){
+
   }
   makeMove(chessCopy) {
-    let fen = chessCopy.fen();
-    let bestMove=this.testMoves(fen);
-    return chessCopy.moves()[bestMove[0]]
+    return chessCopy.moves()[this.testTwoMoves(chessCopy)['index']];
   }
 }
 const create = color => new NickiBot(color)
