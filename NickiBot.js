@@ -53,7 +53,7 @@ class NickiBot {
   testMoves(fen){
     chess.load(fen);
     const currentAdvantage = this.getAdvantage(chess);
-    let bestMoveCurrently =0;
+    let bestMoveCurrently =-10;
     let bestMoveIndexCurrently =0;
     let movesAva = chess.moves();
     for(let index =0;index<movesAva.length;index++){
@@ -64,10 +64,27 @@ class NickiBot {
         return [index,10000000000];
       }
       if (moveValue > bestMoveCurrently) {
-        bestMoveCurrently = moveValue;
-        bestMoveIndexCurrently = index;
+        let tempFen=chess.fen();
+        let tempMoves=chess.moves();
+        let secondCurrentAdvantage=this.getAdvantage(chess);
+      
+        let biggestSecondMoveValue=0;
+        for(let i = 0;i<tempMoves.length;i++){
+          chess.load(tempFen)
+          chess.move(tempMoves[i]);
+          let secondMoveValue=((this.getAdvantage(chess)-secondCurrentAdvantage)+moveValue);
+          if(secondMoveValue<biggestSecondMoveValue){
+            biggestSecondMoveValue=secondMoveValue;
+          }
+        }
+        if(biggestSecondMoveValue>bestMoveCurrently){
+          bestMoveCurrently = moveValue;
+          bestMoveIndexCurrently = index;
+        }
+    
       }
     }
+    console.log(bestMoveCurrently)
     return [bestMoveIndexCurrently,bestMoveCurrently];
 
   }
@@ -83,11 +100,6 @@ class NickiBot {
   makeMove(chessCopy) {
     let fen = chessCopy.fen();
     let bestMove=this.testMoves(fen);
-
-    if (bestMove[1] === 0) {
-      return this.makeZeroValueMove(fen);
-    }
-    
     return chessCopy.moves()[bestMove[0]]
   }
 }
