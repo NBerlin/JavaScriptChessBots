@@ -44,10 +44,17 @@ class KlajjanBot {
   }
 
   getBetterMove(m1, m2) {
-    if (m1.value == m2.value) {
-      return Math.random() < 0.5 ? m1 : m2
-    }
-    return m1.value > m2.value ? m1 : m2
+    return m1.value >= m2.value ? m1 : m2
+  }
+
+  onlyKingMoves(moves) {
+    return moves.map(move => move.move[0] == 'K').reduce((a, b) => a && b, true)
+  }
+
+  filterKings(moves) {
+    return this.onlyKingMoves(moves)
+      ? moves
+      : moves.filter(move => move.move[0] != 'K')
   }
 
   makeMove(chess) {
@@ -58,7 +65,11 @@ class KlajjanBot {
     const best = moves.reduce((move1, move2) =>
       this.getBetterMove(move1, move2)
     )
-    return best.move
+    let filtered_moves = this.filterKings(
+      moves.filter(move => move.value == best.value)
+    )
+    return filtered_moves[Math.floor(filtered_moves.length * Math.random())]
+      .move
   }
 }
 
