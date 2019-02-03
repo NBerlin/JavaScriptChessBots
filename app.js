@@ -4,15 +4,21 @@ const chess = new Chess()
 const player1 = require('./' + process.argv[2])('w')
 const player2 = require('./' + process.argv[3])('b')
 const time = process.argv[4]
+
 while (!chess.game_over()) {
+  let turn
   if (chess.turn() == 'w') {
-    chess.move(player1.makeMove(new Chess(chess.fen())))
+    turn = player1.makeMove(new Chess(chess.fen()))
   } else {
-    chess.move(player2.makeMove(new Chess(chess.fen())))
+    turn = player2.makeMove(new Chess(chess.fen()))
   }
+
+  !chess.move(turn) &&
+    console.log('move failed', turn, 'possibilities', chess.moves())
+
   if (time == 'slow') {
     console.log(chess.ascii())
-    for (var i = 1000000000 - 1; i >= 0; i--) {}
+    for (let i = 1000000000; i >= 0; i--) {}
   }
 }
 

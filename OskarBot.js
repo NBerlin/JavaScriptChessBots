@@ -26,11 +26,10 @@ const total = (state, color) =>
 const anyfromAinB = (A, B) =>
   A.map(item => B.includes(item)).reduce((acc, curr) => acc || curr, false)
 
-const movesThatMatchFlags = (state, flagList) => {
-  return state
+const movesThatMatchFlags = (state, flagList) =>
+  state
     .moves({ verbose: true })
     .filter(mv => anyfromAinB(flagList, mv.flags.split('')))
-}
 
 const moveThatsMateInOne = state =>
   state.moves().find(move => {
@@ -41,16 +40,43 @@ const moveThatsMateInOne = state =>
   })
 
 const canMateInOne = moveThatsMateInOne
-const seeFreePiece = () => false
-const seeFreeCheck = () => false
-const notStuckInLoop = () => false
-const doFreeCheck = () => false
+const seeFreePiece = state =>
+  movesThatMatchFlags(state, ['c', 'e', 'p']).find(move => {
+    state.move(move)
+
+    const takePos = move.to
+    const enemyDefenceMove = state
+      .moves({ verbose: true })
+      .find(mv => mv.to === takePos)
+
+    state.undo()
+    return enemyDefenceMove
+  })
+const takeFreePiece = seeFreePiece
+
+const seeFreeCheck = state =>
+  state.moves({ verbose: true }).find(move => {
+    state.move(move)
+    const check = state.in_check()
+
+    const checkPosition = move.to
+    const enemyDefenceMove = state
+      .moves({ verbose: true })
+      .find(mv => mv.to === checkPosition)
+    // TODO check if worth anyway bcus points
+    // TODO, lockcheck?
+
+    state.undo() // early return made state bad
+    return check && !enemyDefenceMove
+  })
+
+const notStuckInLoop = () => true
+const doFreeCheck = seeFreeCheck
 
 const moveman = ({ color = 'w', name = 'oskar' }) => ({
   makeMove: chess => {
     const justMakeTheBestMove = () => {
       const moves = movesThatMatchFlags(chess, ['c', 'e', 'p'])
-      console.log(moves)
       if (moves.length !== 0) {
         return moves[Math.floor(Math.random() * moves.length)]
       } else {
@@ -65,8 +91,8 @@ const moveman = ({ color = 'w', name = 'oskar' }) => ({
     if (canMateInOne(chess)) {
       return moveThatsMateInOne(chess)
     }
-
     if (seeFreePiece(chess)) {
+      console.log(' freeby')
       return takeFreePiece(chess)
     }
 
