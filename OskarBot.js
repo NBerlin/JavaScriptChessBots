@@ -2,6 +2,15 @@ const alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 const nums = [1, 2, 3, 4, 5, 6, 7, 8]
 const points = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 45 }
 const opponent = { w: 'b', b: 'w' }
+const capture = 'c'
+const nonCapture = 'n'
+const pawnPush = 'b'
+const passantBS = 'e'
+const promotion = 'p'
+const kingCastle = 'k'
+const queenCastle = 'q'
+const stdNotation = 'san'
+
 const pieces = state =>
   alphabet
     .reduce((all, curr) => all.concat(nums.map(n => curr + n)), [])
@@ -14,14 +23,13 @@ const total = (state, color) =>
     .filter(p => p.color === color)
     .reduce((tot, curr) => tot + curr.value, 0)
 
-const movesThatGainPoints = (state, color) => {
-  const curr = total(state, color)
-  return state.moves().filter(mv => {
-    state.move(mv)
-    const tot = total(state, color)
-    state.undo()
-    return tot > curr
-  })
+const anyfromAinB = (A, B) =>
+  A.map(item => B.includes(item)).reduce((acc, curr) => acc || curr, false)
+
+const movesThatMatchFlags = (state, flagList) => {
+  return state
+    .moves({ verbose: true })
+    .filter(mv => anyfromAinB(flagList, mv.flags.split('')))
 }
 
 const moveThatsMateInOne = state =>
@@ -41,7 +49,8 @@ const doFreeCheck = () => false
 const moveman = ({ color = 'w', name = 'oskar' }) => ({
   makeMove: chess => {
     const justMakeTheBestMove = () => {
-      const moves = movesThatGainPoints(chess, color)
+      const moves = movesThatMatchFlags(chess, ['c', 'e', 'p'])
+      console.log(moves)
       if (moves.length !== 0) {
         return moves[Math.floor(Math.random() * moves.length)]
       } else {
