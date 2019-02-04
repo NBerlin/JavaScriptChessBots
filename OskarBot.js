@@ -65,6 +65,8 @@ const seeFreeCheck = state =>
       .find(mv => mv.to === checkPosition)
     // TODO check if worth anyway bcus points
     // TODO, lockcheck?
+    // TODO not only do the first move
+    // TODO for debug, print list of possible moves and their kategory
 
     state.undo() // early return made state bad
     return check && !enemyDefenceMove
@@ -72,6 +74,7 @@ const seeFreeCheck = state =>
 
 const notStuckInLoop = () => true
 const doFreeCheck = seeFreeCheck
+// Todo pusha moves till lista mby ? och sen sortera listan efter värde?
 
 const moveman = ({ color = 'w', name = 'oskar' }) => ({
   makeMove: chess => {
@@ -80,7 +83,9 @@ const moveman = ({ color = 'w', name = 'oskar' }) => ({
       if (moves.length !== 0) {
         return moves[Math.floor(Math.random() * moves.length)]
       } else {
-        const pawns = chess.moves().filter(m => m.length < 3)
+        const pawns = chess
+          .moves({ verbose: true })
+          .filter(m => m.piece === 'p')
         if (pawns.length > 0) {
           return pawns[Math.floor(Math.random() * pawns.length)]
         }
@@ -92,7 +97,6 @@ const moveman = ({ color = 'w', name = 'oskar' }) => ({
       return moveThatsMateInOne(chess)
     }
     if (seeFreePiece(chess)) {
-      console.log(' freeby')
       return takeFreePiece(chess)
     }
 
