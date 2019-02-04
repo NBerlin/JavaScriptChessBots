@@ -40,10 +40,13 @@ const anyFromStringInOther = (A, B) =>
 // TODO,FUTURE SIGHT
 // TODO, add prop -> can opponent do the same
 
-const decoratedMove = (mv, criteria, obj) => ({ ...mv, ...(criteria && obj) })
+const decoratedMove = (mv, criteria, obj) => ({
+  ...mv,
+  ...(criteria && obj)
+})
 const notStuckInLoop = () => true
 
-const moveman = ({ color = 'w', name = 'oskar' }) => ({
+const moveman = ({ color = 'w', name = 'oskar', debug = false }) => ({
   makeMove: chess =>
     chess
       .moves({ verbose: true })
@@ -55,8 +58,15 @@ const moveman = ({ color = 'w', name = 'oskar' }) => ({
       .map(mv => findPieceThatLivesAtHome(mv, chess))
       .map(mv => findEvOtherPawn(mv, chess))
       .map(mv => findPawn(mv, chess))
-      .map(mv => findPreventFreeStuffs(mv, chess))
-      .sort((a, b) => b.value - a.value)[0],
+      //.map(mv => pawnCanProtec(mv, chess))
+      // prevent free stuff doesn't work
+      //.map(mv => findPreventFreeStuffs(mv, chess))
+      // Value move where you protec or beofore protec
+      // map finish him, fixa när bara kung kvar
+      .map(mv => (debug && mv.value > 0 && console.log(mv.meta)) || mv)
+      .sort((a, b) =>
+        b.value === a.value ? Math.random() - 0.5 : b.value - a.value
+      )[0],
   name: () => name
 })
 
@@ -88,6 +98,7 @@ const findFreePiece = (mv, state) => {
   const enemyDefenceMove = state
     .moves({ verbose: true })
     .find(mv => mv.to === takePos)
+
   state.undo()
   return decoratedMove(mv, canTakePiece && !enemyDefenceMove, {
     value: 90,
@@ -119,7 +130,7 @@ const findPreventFreeStuffs = (mv, state) => {
 const findEvOtherPawn = (mv, state) =>
   decoratedMove(
     mv,
-    anyFromStringInOther('b', mv.flags) && mv.from.charAt(0) % 2 === 0,
+    anyFromStringInOther('b', mv.flags) && mv.from.charCodeAt(0) % 2 === 0,
     {
       value: 40,
       meta: 'at least its a big leap for uneven pawn'
@@ -127,11 +138,16 @@ const findEvOtherPawn = (mv, state) =>
   )
 
 const findPieceThatLivesAtHome = (mv, state) =>
-  decoratedMove(mv, parseInt(mv.from) < 3 && parseInt(mv.to) > 2, {
-    value: 35,
-    meta: 'normal pawn'
-  })
+  decoratedMove(
+    mv,
+    parseInt(mv.from.charAt(1)) < 5 &&
+      parseInt(mv.to.charAt(1)) > parseInt(mv.from.charAt(1)),
+    {
+      value: 29,
+      meta: 'home alone'
+    }
+  )
 const findPawn = (mv, state) =>
   decoratedMove(mv, mv.peice === 'b', { value: 30, meta: 'normal pawn' })
 
-module.exports = color => moveman({ color })
+module.exports = color => moveman({ color, debug: false })
