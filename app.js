@@ -29,7 +29,6 @@ while (!chess.game_over()) {
 }
 
 console.log(chess.ascii())
-console.log('Turn: ', chess.turn())
 if (chess.in_checkmate()) {
   if (chess.turn() != 'w') {
     console.log('White Won!')
@@ -41,6 +40,9 @@ if (chess.in_checkmate()) {
 } else {
   console.log('It was a draw')
 }
+console.log('---')
 
-console.log('Player One Total Time (s): ', timePlayer1 / 1000.0)
-console.log('Player Two Total Time (s): ', timePlayer2 / 1000.0)
+console.log(player1.name())
+console.log('time (s): ', timePlayer1 / 1000.0)
+console.log(player2.name())
+console.log('time (s): ', timePlayer2 / 1000.0)
