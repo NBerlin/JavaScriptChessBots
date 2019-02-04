@@ -1,4 +1,4 @@
-const points = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 40 }
+const points = { p: 4, n: 12, b: 12, r: 20, q: 36, k: 120 }
 
 class KlajjanBot {
   constructor(color) {
@@ -6,84 +6,74 @@ class KlajjanBot {
   }
 
   name() {
-    return `KlajjanBot: ${this.color}`
+    return 'KlajjanBot'
   }
 
-  getSquare(move) {
-    return move
-      .replace('+', '')
-      .split('=')[0]
-      .split('x')
-      .slice(-1)[0]
+  simpleMoveValue(move) {
+    return (
+      (move.captured ? points[move.captured] : 0) +
+      (move.promotion ? points[move.promotion] - points['p'] : 0) +
+      (move.flags == 'b' ? 1 : 0) +
+      (move.flags == 'q' ? 2 : 0) +
+      (move.flags == 'k' ? 3 : 0)
+    )
   }
 
-  getMoveValue(chess, move) {
-    const chess_square = chess.get(this.getSquare(move))
-    let value = 0
-    if (move.includes('=')) {
-      value += points[move.split('=')[1]]
-    }
-    if (move == 'O-O' || move == 'O-O-O') {
-      value += 2
-    }
-    if (chess_square) {
-      value += points[chess_square.type]
-    }
+  moveValue(chess, move) {
+    let value = this.simpleMoveValue(move)
 
-    return value
-  }
-
-  getValue(chess, move) {
-    let value = this.getMoveValue(chess, move)
-
-    chess.move(move)
+    chess.move(move.san)
     if (chess.in_checkmate()) {
       value += 100000
+    } else if (chess.in_draw()) {
+      value -= 10000
     } else {
-      value -= chess
-        .moves()
-        .map(move => this.getMoveValue(chess, move))
-        .reduce((v1, v2) => Math.max(v1, v2), 0)
+      value -= Math.max(
+        ...chess
+          .moves({ verbose: true })
+          .map(tMove =>
+            tMove.captured && tMove.to == move.to
+              ? this.moveValue(chess, tMove)
+              : this.simpleMoveValue(tMove)
+          )
+      )
     }
     chess.undo()
 
     return value
   }
 
-  reducerMethod(list, obj, comp) {
-    if (list.length == 0 || comp(list[0], obj) < 0) {
-      return [obj]
-    } else if (comp(list[0], obj) == 0) {
-      list.push(obj)
+  reducerMethod(list, move) {
+    if (list.length == 0 || list[0].value - move.value < 0) {
+      return [move]
+    } else if (list[0].value - move.value == 0) {
+      return list.concat(move)
     }
 
     return list
   }
 
-  onlyKingMoves(moves) {
-    return moves.map(move => move.move[0] == 'K').reduce((a, b) => a && b, true)
+  kingFilter(moves) {
+    return moves.every(move => move.piece == 'k')
+      ? moves
+      : moves.filter(move => move.piece != 'k')
   }
 
-  filterKings(moves) {
-    return this.onlyKingMoves(moves)
-      ? moves
-      : moves.filter(move => move.move[0] != 'K')
+  moves(chess) {
+    return chess
+      .moves({ verbose: true })
+      .map(move => ({ san: move.san, value: this.moveValue(chess, move) }))
   }
 
   makeMove(chess) {
-    const moves = chess
-      .moves()
-      .map(move => ({ move: move, value: this.getValue(chess, move) }))
-
-    const filtered_moves = this.filterKings(
-      moves.reduce(
-        (m1, m2) => this.reducerMethod(m1, m2, (o1, o2) => o1.value - o2.value),
+    const filtered_moves = this.kingFilter(
+      this.moves(chess).reduce(
+        (list, move) => this.reducerMethod(list, move),
         []
       )
     )
 
-    return filtered_moves[Math.floor(filtered_moves.length * Math.random())]
-      .move
+    return filtered_moves[Math.floor(filtered_moves.length * Math.random())].san
   }
 }
 
