@@ -3,7 +3,7 @@ const chess = new Chess()
 
 const player1 = require('./' + process.argv[2])('w')
 const player2 = require('./' + process.argv[3])('b')
-const time = process.argv[4]
+const arg = process.argv[4]
 
 let timePlayer1 = 0
 let timePlayer2 = 0
@@ -22,13 +22,19 @@ while (!chess.game_over()) {
   !chess.move(turn) &&
     console.log('move failed', turn, 'possibilities', chess.moves())
 
-  if (time == 'slow') {
+  if (arg == 'slow') {
     console.log(chess.ascii())
     for (let i = 1000000000; i >= 0; i--) {}
+  } else if (arg == 'show') {
+    console.log(chess.fen())
+    console.log(chess.ascii())
   }
 }
 
-console.log(chess.ascii())
+if (!arg) {
+  console.log(chess.ascii())
+}
+
 if (chess.in_checkmate()) {
   if (chess.turn() != 'w') {
     console.log('White Won!')
