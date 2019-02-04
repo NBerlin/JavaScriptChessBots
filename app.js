@@ -32,17 +32,15 @@ console.log(chess.ascii())
 if (chess.in_checkmate()) {
   if (chess.turn() != 'w') {
     console.log('White Won!')
-    console.log('Winner: ' + player1.name())
   } else {
     console.log('Black Won!')
-    console.log('Winner: ' + player2.name())
   }
 } else {
   console.log('It was a draw')
 }
 console.log('---')
 
-console.log(player1.name())
+console.log(player1.name(), ' (white)')
 console.log('time (s): ', timePlayer1 / 1000.0)
-console.log(player2.name())
+console.log(player2.name(), ' (black)')
 console.log('time (s): ', timePlayer2 / 1000.0)
