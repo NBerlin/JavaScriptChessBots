@@ -23,6 +23,7 @@ while (!chess.game_over()) {
     console.log('move failed', turn, 'possibilities', chess.moves())
 
   if (arg == 'slow') {
+    console.log(chess.fen())
     console.log(chess.ascii())
     for (let i = 1000000000; i >= 0; i--) {}
   } else if (arg == 'show') {
