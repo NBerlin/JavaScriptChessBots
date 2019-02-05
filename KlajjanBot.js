@@ -68,6 +68,14 @@ class KlajjanBot {
     return 'KlajjanBot'
   }
 
+  square(pos) {
+    return numToLetter[pos.x] + (pos.y + 1)
+  }
+
+  position(pos) {
+    return { x: letterToNum[pos[0]], y: parseInt(pos[1]) - 1 }
+  }
+
   pawnCheckSquare(chess, pos, dx, dy, checkForPawn = false) {
     const sq = chess.get(this.square({ x: pos.x - dx, y: pos.y - dy }))
     return sq && sq.color == this.color && (checkForPawn || sq.type == 'p')
@@ -90,14 +98,6 @@ class KlajjanBot {
     return (
       this.pawnNeighbourValue(chess, to) - this.pawnNeighbourValue(chess, from)
     )
-  }
-
-  square(pos) {
-    return numToLetter[pos.x] + (pos.y + 1)
-  }
-
-  position(pos) {
-    return { x: letterToNum[pos[0]], y: parseInt(pos[1]) - 1 }
   }
 
   positionValue(chess, move) {
