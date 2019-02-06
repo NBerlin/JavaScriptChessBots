@@ -24,13 +24,13 @@ while (!chess.game_over()) {
     break
   }
 
+  if (arg == 'slow' || arg == 'show') {
+    console.log(chess.fen())
+    console.log(chess.ascii())
+  }
+
   if (arg == 'slow') {
-    console.log(chess.fen())
-    console.log(chess.ascii())
     for (let i = 1000000000; i >= 0; i--) {}
-  } else if (arg == 'show') {
-    console.log(chess.fen())
-    console.log(chess.ascii())
   }
 }
 
