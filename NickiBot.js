@@ -43,16 +43,35 @@ class NickiBot {
       0
     )
     if(this.color='w'){
-      return whiteValue - blackValue
+      return whiteValue - blackValue;
     }
-    else{
-      return blackValue -whiteValue
-    }
+      return blackValue -whiteValue;
     
   }
-  testMoves(chessCopy){
-    this.testTwoMoves(chessCopy);
+  testMoves(chessMoves){
+    let captureMoves=this.simpleCapture(chessMoves);
+    return chessMoves[0];
+   // return this.testTwoMoves(chessCopy);
 
+  }
+  simpleCapture(chessMoves){
+    chessMoves
+      .filter(move=>move.captured)
+      .map(move=>({
+        ...move,
+        tradeValue: pieceValues[move.captured]-pieceValues[move.piece],
+      }));
+    let evenTrades =chessMoves.filter(move=>move.valueOfCapture===0);
+    console.log(evenTrades);
+    let advantagedTrade=chessMoves
+    .filter(move=>move.valueOfCapture>move.valueOfPiece)
+    .reduce((move,move2)=>move.valueOfCapture>move2.valueOfCapture?move:move2,0);
+    console.log(advantagedTrade);
+    if(advantagedTrade.length>0){
+      console.log(advantagedTrade[0])
+    return advantagedTrade[0].san;
+    }
+    return chessMoves[0].san;
   }
   testTwoMoves(chessCopy){
     let advBeforeMove = this.getAdvantage(chessCopy);
@@ -84,7 +103,9 @@ class NickiBot {
 
   }
   makeMove(chessCopy) {
-    return chessCopy.moves()[this.testTwoMoves(chessCopy)['index']];
+    //return chessCopy.moves()[this.testTwoMoves(chessCopy)['index']];
+    return this.testMoves(chessCopy.moves({verbose:true}));
+     
   }
 }
 const create = color => new NickiBot(color)
