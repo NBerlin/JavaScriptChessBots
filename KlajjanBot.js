@@ -90,7 +90,9 @@ class KlajjanBot {
       this.pawnCheckSquare(chess, pos, -1, -colMul[this.color], true) +
       this.pawnCheckSquare(chess, pos, 1, -colMul[this.color], true) -
       this.pawnCheckSquare(chess, pos, -1, 0, true) -
-      this.pawnCheckSquare(chess, pos, 1, 0, true)
+      this.pawnCheckSquare(chess, pos, 1, 0, true) -
+      2 * this.pawnCheckSquare(chess, pos, 0, colMul[this.color], true) -
+      2 * this.pawnCheckSquare(chess, pos, 0, -colMul[this.color], true)
     )
   }
 
@@ -128,6 +130,7 @@ class KlajjanBot {
         (move.promotion ? promotion[move.promotion] : 0) +
         (move.flags == 'q' ? 4 : 0) +
         (move.flags == 'k' ? 7 : 0) +
+        (move.san[move.san.length - 1] == '#' ? 1000 : 0) +
         this.positionValue(chess, move))
     )
   }
@@ -138,7 +141,11 @@ class KlajjanBot {
       : false
   }
 
-  moveValue(chess, move, ret = false, level = 0) {
+  checkMove(move) {
+    return move.san[move.san.length - 1] == '+'
+  }
+
+  moveValue(chess, move, ret = false, checkedChecked = false, level = 0) {
     let value = this.simpleMoveValue(chess, move)
 
     if (ret || level > 3) {
@@ -146,18 +153,26 @@ class KlajjanBot {
     }
 
     chess.move(move.san)
-    if (chess.in_checkmate() && level == 0) {
-      value += 100000
+    if (chess.in_checkmate()) {
+      value += 1000
     } else if (chess.in_draw() && level == 0) {
-      value -= 100000
+      value -= 1000
     } else {
       const func = move.color == this.color ? Math.min : Math.max
       value += func(
-        ...chess.moves({ verbose: true }).map(tMove =>
-          tMove.captured // && tMove.to == move.to)
-            ? this.moveValue(chess, tMove, this.tradeDown(move), level + 1)
-            : this.simpleMoveValue(chess, tMove)
-        )
+        ...chess
+          .moves({ verbose: true })
+          .map(tMove =>
+            tMove.captured || (!checkedChecked && this.checkMove(move))
+              ? this.moveValue(
+                  chess,
+                  tMove,
+                  this.tradeDown(move),
+                  checkedChecked || this.checkMove(move),
+                  level + 1
+                )
+              : this.simpleMoveValue(chess, tMove)
+          )
       )
     }
     chess.undo()

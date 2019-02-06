@@ -9,18 +9,20 @@ let timePlayer1 = 0
 let timePlayer2 = 0
 
 while (!chess.game_over()) {
-  let turn
+  let playerMove
   const temp = Date.now()
   if (chess.turn() == 'w') {
-    turn = player1.makeMove(new Chess(chess.fen()))
+    playerMove = player1.makeMove(new Chess(chess.fen()))
     timePlayer1 += Date.now() - temp
   } else {
-    turn = player2.makeMove(new Chess(chess.fen()))
+    playerMove = player2.makeMove(new Chess(chess.fen()))
     timePlayer2 += Date.now() - temp
   }
 
-  !chess.move(turn) &&
-    console.log('move failed', turn, 'possibilities', chess.moves())
+  if (!chess.move(playerMove)) {
+    console.log('move failed', playerMove, 'possibilities', chess.moves())
+    break
+  }
 
   if (arg == 'slow') {
     console.log(chess.fen())
