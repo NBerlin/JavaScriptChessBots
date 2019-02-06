@@ -130,7 +130,6 @@ class KlajjanBot {
         (move.promotion ? promotion[move.promotion] : 0) +
         (move.flags == 'q' ? 4 : 0) +
         (move.flags == 'k' ? 7 : 0) +
-        (move.san[move.san.length - 1] == '#' ? 1000 : 0) +
         this.positionValue(chess, move))
     )
   }
