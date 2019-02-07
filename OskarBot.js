@@ -36,27 +36,22 @@ const multipliedPoint = multi =>
 
 const weights = {
   checkmate: 100000,
-  check: 5,
+  check: 2,
   takePieceLoseRatio: -1,
   threatenTakeRatio: 0.3,
-  protectTakeRatio: 0.3,
-  movesAfter: 0.01,
-  castle: 0.7
+  protectTakeRatio: 0.2,
+  protectSquare: 0.01,
+  movesAfter: 0.02,
+  castle: 2
 }
 
-const points = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 45 }
+const points = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 50 }
 
-// TODO, add points if also check?
-// TODO, check safe fork
-// TODO check if worth anyway bcus points
-// todo, standing in therathenenddjalkfja
 // TODO, lockcheck?
-// TODO not only do the first move
-// TODO care about points
-// TODO for debug, print list of possible moves and their kategory
-// TODO const offerFreePieceForCheckmate = a => a; // the idea is to look for an exchange that would be bad but win the game
+// move -> if draw -> don't stalemate
+// Maximize spots that are protec
+// Threathen / protec / stand in protected
 // TODO,FUTURE SIGHT
-// TODO, add prop -> can opponent do the same
 // TODO, skicka med "protected squares, eller sätt funktion för det"
 
 const decoratedMove = (mv, criteria, { value, meta }) => ({
@@ -77,12 +72,23 @@ const moveman = ({ color = 'w', name = 'oskar', debug = false }) => ({
       .map(mv => canCastle(mv, chess))
       .map(mv => oppCanTakeNewPos(mv, chess))
       .map(mv => canEnableMoves(mv, chess))
+      .map(mv => pawnsFinishHim(mv, chess, color))
       .sort((a, b) =>
         b.value === a.value ? Math.random() - 0.5 : b.value - a.value
       )
-      .map(mv => (debug && console.log(mv.value, mv.meta)) || mv)[0],
+      .map(
+        mv => (debug && console.log(mv.value, mv.piece, mv.to, mv.meta)) || mv
+      )[0],
   name: () => name
 })
+
+const pawnsFinishHim = (mv, state, color) => {
+  const onlyKingLeft = total(state, opponent[color]) === weights.king
+  return decoratedMove(mv, onlyKingLeft && mv.piece === 'p', {
+    value: weights.checkmate - 1,
+    meta: 'Only king left, getem pawns!'
+  })
+}
 
 const canEnableMoves = (mv, state) => {
   const before = state.moves().length
@@ -150,4 +156,4 @@ const canCastle = (mv, state) =>
     meta: 'wow castle'
   })
 
-module.exports = color => moveman({ color, debug: false })
+module.exports = color => moveman({ color, debug: true })
