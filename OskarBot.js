@@ -1,6 +1,5 @@
 const alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
 const nums = [1, 2, 3, 4, 5, 6, 7, 8]
-const points = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 45 }
 const opponent = { w: 'b', b: 'w' }
 const capture = 'c'
 const nonCapture = 'n'
@@ -29,9 +28,28 @@ const anyfromListinOther = (A, B) =>
 const anyFromStringInOther = (A, B) =>
   anyfromListinOther(A.split(''), B.split(''))
 
+const multipliedPoint = multi =>
+  Object.assign(...Object.entries(points).map(([k, v]) => ({ [k]: multi * v })))
+
+// check if behind
+// check if only king left -> finish him mode
+
+const weights = {
+  checkmate: 100000,
+  check: 5,
+  takePieceLoseRatio: -1,
+  threatenTakeRatio: 0.3,
+  protectTakeRatio: 0.3,
+  movesAfter: 0.01,
+  castle: 0.7
+}
+
+const points = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 45 }
+
 // TODO, add points if also check?
 // TODO, check safe fork
 // TODO check if worth anyway bcus points
+// todo, standing in therathenenddjalkfja
 // TODO, lockcheck?
 // TODO not only do the first move
 // TODO care about points
@@ -39,10 +57,11 @@ const anyFromStringInOther = (A, B) =>
 // TODO const offerFreePieceForCheckmate = a => a; // the idea is to look for an exchange that would be bad but win the game
 // TODO,FUTURE SIGHT
 // TODO, add prop -> can opponent do the same
+// TODO, skicka med "protected squares, eller sätt funktion för det"
 
-const decoratedMove = (mv, criteria, obj) => ({
+const decoratedMove = (mv, criteria, { value, meta }) => ({
   ...mv,
-  ...(criteria && obj)
+  ...(criteria && { value: mv.value + value, meta: mv.meta.concat(meta) })
 })
 const notStuckInLoop = () => true
 
@@ -50,104 +69,85 @@ const moveman = ({ color = 'w', name = 'oskar', debug = false }) => ({
   makeMove: chess =>
     chess
       .moves({ verbose: true })
-      .map(mv => ({ ...mv, value: 0, meta: 'garbage default move' }))
-      .map(mv => findCheckmate(mv, chess))
-      .map(mv => findFreePiece(mv, chess))
-      .map(mv => findFreeCheck(mv, chess))
-      .map(mv => findCastle(mv, chess))
-      .map(mv => findPieceThatLivesAtHome(mv, chess))
-      .map(mv => findEvOtherPawn(mv, chess))
-      .map(mv => findPawn(mv, chess))
-      //.map(mv => pawnCanProtec(mv, chess))
-      // prevent free stuff doesn't work
-      //.map(mv => findPreventFreeStuffs(mv, chess))
-      // Value move where you protec or beofore protec
-      // map finish him, fixa när bara kung kvar
-      .map(mv => (debug && mv.value > 0 && console.log(mv.meta)) || mv)
+      .map(mv => ({ ...mv, value: 0, meta: [] }))
+      .map(mv => canCheckmate(mv, chess))
+      .map(mv => canTakePiece(mv, chess))
+      .map(mv => canGetPromotion(mv, chess))
+      .map(mv => canCheck(mv, chess))
+      .map(mv => canCastle(mv, chess))
+      .map(mv => oppCanTakeNewPos(mv, chess))
+      .map(mv => canEnableMoves(mv, chess))
       .sort((a, b) =>
         b.value === a.value ? Math.random() - 0.5 : b.value - a.value
-      )[0],
+      )
+      .map(mv => (debug && console.log(mv.value, mv.meta)) || mv)[0],
   name: () => name
 })
 
-const findCheckmate = (mv, state) => {
+const canEnableMoves = (mv, state) => {
+  const before = state.moves().length
+  state.move(mv)
+  // Opp makes random move
+  const oppMovs = state.moves()
+  state.move(oppMovs[Math.floor(Math.random() * oppMovs.length)])
+  const score = state.moves().length - before
+  state.undo()
+  state.undo()
+  return decoratedMove(mv, true, {
+    value: score * weights.movesAfter,
+    meta: `${score} moves enabled after this move`
+  })
+}
+
+const canCheckmate = (mv, state) => {
   state.move(mv)
   const isDone = state.in_checkmate()
   state.undo()
-  return decoratedMove(mv, isDone, { value: 1000, meta: 'Checkmateboiiiis' })
+  return decoratedMove(mv, isDone, {
+    value: weights.checkmate,
+    meta: 'Checkmateboiiiis'
+  })
 }
 
-const findFreeCheck = (mv, state) => {
+const canCheck = (mv, state) => {
   state.move(mv)
   const check = state.in_check()
-  const checkPosition = mv.to
-  const enemyDefenceMove = state
-    .moves({ verbose: true })
-    .find(mv => mv.to === checkPosition)
   state.undo()
-  return decoratedMove(mv, check && !enemyDefenceMove, {
-    value: 70,
-    meta: 'free Check'
+  return decoratedMove(mv, check, {
+    value: weights.check,
+    meta: 'check'
   })
 }
 
-const findFreePiece = (mv, state) => {
-  const canTakePiece = anyFromStringInOther('cep', mv.flags)
+const oppCanTakeNewPos = (mv, state) => {
+  const myPos = mv.to
   state.move(mv)
-  const takePos = mv.to
-  const enemyDefenceMove = state
+  const enemyTakesMe = state
     .moves({ verbose: true })
-    .find(mv => mv.to === takePos)
-
+    .find(mv => mv.to === myPos)
   state.undo()
-  return decoratedMove(mv, canTakePiece && !enemyDefenceMove, {
-    value: 90,
-    meta: 'free piece'
+
+  return decoratedMove(mv, enemyTakesMe, {
+    value: weights.takePieceLoseRatio * (points[mv.piece] || 0),
+    meta: 'lose piece'
   })
 }
 
-const findCastle = (mv, state) =>
+const canGetPromotion = (mv, state) =>
+  decoratedMove(mv, mv.promotion, {
+    value: points[mv.promotion],
+    meta: 'promotion'
+  })
+const canTakePiece = (mv, state) =>
+  decoratedMove(mv, mv.captured, {
+    value: points[mv.captured],
+    meta: 'capture'
+  })
+
+const canCastle = (mv, state) =>
   decoratedMove(mv, anyFromStringInOther('kq', mv.flags), {
-    value: 75,
+    value: weights.castle,
     meta: 'wow castle'
   })
-
-const findPreventFreeStuffs = (mv, state) => {
-  // If we move current move
-  state.move(mv)
-  const theyTakePiece = anyFromStringInOther('cep', mv.flags)
-  const takePos = mv.to
-  const canTakeBack = state
-    .moves({ verbose: true })
-    .find(mv => mv.to === takePos)
-  state.undo()
-  return decoratedMove(mv, theyTakePiece && !canTakeBack, {
-    value: mv.value - 50,
-    meta: `${mv.meta}, reduced because they take ${takePos}`
-  })
-}
-
-const findEvOtherPawn = (mv, state) =>
-  decoratedMove(
-    mv,
-    anyFromStringInOther('b', mv.flags) && mv.from.charCodeAt(0) % 2 === 0,
-    {
-      value: 40,
-      meta: 'at least its a big leap for uneven pawn'
-    }
-  )
-
-const findPieceThatLivesAtHome = (mv, state) =>
-  decoratedMove(
-    mv,
-    parseInt(mv.from.charAt(1)) < 5 &&
-      parseInt(mv.to.charAt(1)) > parseInt(mv.from.charAt(1)),
-    {
-      value: 29,
-      meta: 'home alone'
-    }
-  )
-const findPawn = (mv, state) =>
-  decoratedMove(mv, mv.peice === 'b', { value: 30, meta: 'normal pawn' })
 
 module.exports = color => moveman({ color, debug: false })
