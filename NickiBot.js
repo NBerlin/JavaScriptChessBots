@@ -17,89 +17,35 @@ class NickiBot {
       []
     )
   }
-  getPiecesOnBoard(board) {
-    //Returns a array containing every piece on the board.
+  getPiecesOnBoard() {
+    return this.pieceSymbols.map(obj => chess.get(obj)).filter(obj2 => obj2);
+  }
+getAdvantage(){
+    let pieces=this.getPiecesOnBoard()
+    .reduce((obj1,obj2)=>{
+      if(obj2.color===this.color){
+        return obj1+pieceValues[obj2.type];
+      }
+      return obj1-pieceValues[obj2.type];
+    },0);
+    return pieces;
+  }
 
-    return this.pieceSymbols.map(obj => board.get(obj)).filter(obj2 => obj2)
-  }
-  getAdvantage(board) {
-    let piecesOnBoard = this.getPiecesOnBoard(board)
-    let whitePieces = piecesOnBoard.filter(obj => obj.color === 'w')
-    let blackPieces = piecesOnBoard.filter(obj => obj.color === 'b')
-    whitePieces = whitePieces.map(piece => ({
-      ...piece,
-      value: pieceValues[piece.type]
-    }))
-    blackPieces = blackPieces.map(piece => ({
-      ...piece,
-      value: pieceValues[piece.type]
-    }))
-    let whiteValue = whitePieces.reduce(
-      (firstValue, secondValue) => firstValue + secondValue.value,
-      0
-    )
-    let blackValue = blackPieces.reduce(
-      (bValue, b2Value) => bValue + b2Value.value,
-      0
-    )
-    if(this.color='w'){
-      return whiteValue - blackValue;
-    }
-      return blackValue -whiteValue;
-    
-  }
-  testMoves(chessMoves){
+testMoves(chessMoves){
     let ggchecker=this.checkCheckMate(chessMoves);
     if(ggchecker){
         return ggchecker;
     }
     chessMoves=this.setValuesOnMoves(chessMoves);
-    let godMove=chessMoves.reduce((obj1,obj2)=>obj1.rekursionValue>=obj2.rekursionValue?obj1:obj2,-1)
-    if(godMove.rekursionValue>0){
-      return godMove
-    }
-    return this.safeMove(chessMoves)||godMove;
-    //return (this.simpleCapture(chessMoves)||chessMoves[0]);
-   // return this.testTwoMoves(chessCopy);
-
+    console.log(chessMoves)
+    return chessMoves.reduce((obj1,obj2)=>obj1.rekursionValue>=obj2.rekursionValue?obj1:obj2,-1);
   }
-  bestTradeMove(moves){
-   moves=moves.filter(move=>this.bestTradeMoveHelp(move)!=null);
-  }
-  bestTradeMoveHelp(move){
-   chess.move(move.san);
-   move=chess.moves().filter(move=>move.captured);
-   if(move.length>0)
-   move.forEach(move=>{
-      move.rekursionValue=whoWinsCapture(move);
-   });
-
-
-   return move.reduce((move1,move2)=>move1.rekursionValue>move2.rekursionValue?move1:move2);
-  }
-  safeMove(moves){
-moves=moves.filter(obj=>this.safeMoveHelp(obj));
-return moves[Math.floor(Math.random()*moves.length)]
-  }
-  safeMoveHelp(move){
-    chess.move(move.san);
-    move=chess.moves({verbose:true})
-    chess.undo();
-    if(move.filter(move=>move.captured).length>0){
-      return false;
-    }
-    return true;
-    
-
-  }
+  
   setValuesOnMoves(chessMoves){
     let newChessMoves=chessMoves
     .map(move=>({
       ...move,
-      pieceValue:pieceValues[move.piece],
-      captureValue: (pieceValues[move.captured]||0)+(0+pieceValues[move.promotion]||0),
-      tradeValue: (pieceValues[move.captured]||0)+(0+pieceValues[move.promotion]||0)-pieceValues[move.piece],
-      rekursionValue:this.whoWinsCapture(move,(pieceValues[move.captured]||0)),
+      rekursionValue:this.rekursionMove(move,1)
   }));
   return newChessMoves;
 }
@@ -110,36 +56,6 @@ checkCheckMate(chessMoves){
  }
   return false;
 }
-  simpleCapture(chessMoves){
-   return this.getFreePiece(chessMoves)||
-   this.pushAFuckingPawn(chessMoves)||
-   chessMoves[Math.floor(Math.random*chessMoves.length)];
-  }
-  getFreePiece(chessMoves){
-    chessMoves = chessMoves
-    .filter(moves=>moves.captureValue>0)
-    .map(move=>({
-      ...move,
-      freePiece:this.freePiece(move)
-    }))
-    .reduce((move1,move2)=>move1.captureValue>move2.captureValue?move1:move2,0);
-    if(chessMoves.captureValue>0){
-
-      return chessMoves;
-    }
-    return null;
-  }
-  freePiece(move){
-    chess.move(move.san);
-    let chessMoves=chess.moves();
-    chessMoves=chessMoves.filter(secondMove=>secondMove.captured);
-    chess.undo();
-    if(chessMoves){
-      chessMoves.reduce((firstMove,secondMove)=>pieceValues[firstMove.captured]>pieceValues[secondMove.captured]?firstMove:secondMove,0);
-      return move.captureValue-pieceValues[chessMoves.captured];
-    }
-    return move.captureValue;
-  }
   whoWinsCapture(move,initialTradeValue){ 
     chess.move(move.san)
     let chessMoves=chess.moves({verbose:true});
@@ -157,16 +73,33 @@ checkCheckMate(chessMoves){
     chess.undo();
     return initialTradeValue;
 }
-  pushAFuckingPawn(chessMoves){
-    chessMoves=chessMoves.filter(move=>move.piece=='p');
-    return chessMoves[Math.floor(Math.random()*chessMoves.length)]
+rekursionMove(move,depth,me){
+  chess.move(move.san);
+  let moves = chess.moves({verbose:true})
+  if(depth===0){
+    return this.getAdvantage();
   }
-  getTempMoves(move){
-    chess.move(move);
-    let temp = chess.moves();
-    chess.undo();
-    return temp;
+  if(me){
+    var bestMove=-9999;
   }
+  else{
+    var bestMove=9999;
+  }
+  
+  for(var i =0;i<moves.length;i++){
+      if(me){
+        bestMove= Math.max(bestMove,this.rekursionMove(moves[i],depth-1,!me));
+      }
+      else{
+        bestMove= Math.min(bestMove,this.rekursionMove(moves[i],depth-1,!me));
+      }
+      
+    
+  }
+  chess.undo();
+  return bestMove;
+}
+  
   makeMove(chessCopy) {
     chess=chessCopy;
     
