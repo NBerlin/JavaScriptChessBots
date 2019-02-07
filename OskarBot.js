@@ -72,7 +72,7 @@ const moveman = ({ color = 'w', name = 'oskar', debug = false }) => ({
       .map(mv => canCastle(mv, chess))
       .map(mv => oppCanTakeNewPos(mv, chess))
       .map(mv => canEnableMoves(mv, chess))
-      .map(mv => pawnsFinishHim(mv, chess, color))
+      //.map(mv => pawnsFinishHim(mv, chess, color))
       .sort((a, b) =>
         b.value === a.value ? Math.random() - 0.5 : b.value - a.value
       )
@@ -105,15 +105,11 @@ const canEnableMoves = (mv, state) => {
   })
 }
 
-const canCheckmate = (mv, state) => {
-  state.move(mv)
-  const isDone = state.in_checkmate()
-  state.undo()
-  return decoratedMove(mv, isDone, {
+const canCheckmate = (mv, state) =>
+  decoratedMove(mv, mv.san.includes('#'), {
     value: weights.checkmate,
     meta: 'Checkmateboiiiis'
   })
-}
 
 const canCheck = (mv, state) => {
   state.move(mv)
@@ -156,4 +152,4 @@ const canCastle = (mv, state) =>
     meta: 'wow castle'
   })
 
-module.exports = color => moveman({ color, debug: true })
+module.exports = color => moveman({ color, debug: false })

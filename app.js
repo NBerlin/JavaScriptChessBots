@@ -12,10 +12,10 @@ while (!chess.game_over()) {
   let playerMove
   const temp = Date.now()
   if (chess.turn() == 'w') {
-    playerMove = player1.makeMove({ ...chess })
+    playerMove = player1.makeMove(new Chess(chess.fen()))
     timePlayer1 += Date.now() - temp
   } else {
-    playerMove = player2.makeMove({ ...chess })
+    playerMove = player2.makeMove(new Chess(chess.fen()))
     timePlayer2 += Date.now() - temp
   }
 
