@@ -77,6 +77,13 @@ const movesForHorse = [
   [1, -2],
   [-1, -2]
 ]
+//prettier-ignore
+const movesForKing = [
+  [ 1,  1], [ 1,  0], [ 1, -1],
+  [ 0,  1],           [ 0, -1],
+  [-1, -1], [-1,  0], [-1,  1],
+];
+const captureForPawn = [[1, 1], [1, -1]]
 
 const horsemoves = pos =>
   movesForHorse
@@ -108,7 +115,9 @@ const moveman = ({ color = 'w', name = 'oskar', debug = false }) => ({
       .map(mv => canCheck(mv, chess))
       .map(mv => canCastle(mv, chess))
       .map(mv => oppCanTakeNewPos(mv, chess))
+      .map(mv => oppCanCheckmate(mv, chess))
       .map(mv => canEnableMoves(mv, chess))
+      .map(mv => preventDraw(mv, chess))
       //.map(mv => pawnsFinishHim(mv, chess, color))
       .sort((a, b) =>
         b.value === a.value ? Math.random() - 0.5 : b.value - a.value
@@ -118,6 +127,17 @@ const moveman = ({ color = 'w', name = 'oskar', debug = false }) => ({
       )[0],
   name: () => name
 })
+
+const oppCanCheckmate = (mv, state) => {
+  state.move(mv)
+  const theyCheckMate = state.moves().find(mv => mv.includes('#'))
+  state.undo()
+
+  return decoratedMove(mv, theyCheckMate, {
+    value: weights.checkmate - 1,
+    meta: 'this moves enables their checkmate'
+  })
+}
 
 const pawnsFinishHim = (mv, state, color) => {
   const onlyKingLeft = total(state, opponent[color]) === weights.king
@@ -188,5 +208,15 @@ const canCastle = (mv, state) =>
     value: weights.castle,
     meta: 'wow castle'
   })
+//TODO know if this works since history doesn't
+const preventDraw = (mv, state) => {
+  state.move(mv)
+  const isDraw = state.in_draw()
+  state.undo()
+  return decoratedMove(mv, isDraw, {
+    value: weights.draw,
+    meta: "let's not draw"
+  })
+}
 
 module.exports = color => moveman({ color, debug: false })
