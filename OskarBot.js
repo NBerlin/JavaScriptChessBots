@@ -46,6 +46,50 @@ const weights = {
 }
 
 const points = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 50 }
+const board = alphabet.reduce(
+  (all, curr) => all.concat(nums.map(n => curr + n)),
+  []
+)
+const row = pos =>
+  board.filter(
+    spot => spot.includes(pos.charAt(0)) || spot.includes(pos.charAt(1))
+  )
+
+const diffs = [-8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8]
+const pos2pair = pos =>
+  pos.split('').map(item => parseInt(item) || parseInt(item.charCodeAt(0) - 96))
+const pair2pos = pair => [String.fromCharCode(pair[0] + 96), pair[1]].join('')
+
+const isRealMove = ([a, b]) => a > 0 && a <= 8 && b > 0 && b <= 8
+const diagonal = pos =>
+  diffs
+    .map(num => pos2pair(pos).map(i => i + num))
+    .filter(isRealMove)
+    .map(pair2pos)
+
+const movesForHorse = [
+  [2, 1],
+  [-2, 1],
+  [2, -1],
+  [-2, -1],
+  [1, 2],
+  [-1, 2],
+  [1, -2],
+  [-1, -2]
+]
+//prettier-ignore
+const movesForKing = [
+  [ 1,  1], [ 1,  0], [ 1, -1],
+  [ 0,  1],           [ 0, -1],
+  [-1, -1], [-1,  0], [-1,  1],
+];
+const captureForPawn = [[1, 1], [1, -1]]
+
+const horsemoves = pos =>
+  movesForHorse
+    .map(([a, b]) => [pos2pair(pos)[0] + a, pos2pair(pos)[1] + b])
+    .filter(isRealMove)
+    .map(pair2pos)
 
 // TODO, lockcheck?
 // move -> if draw -> don't stalemate
@@ -71,7 +115,9 @@ const moveman = ({ color = 'w', name = 'oskar', debug = false }) => ({
       .map(mv => canCheck(mv, chess))
       .map(mv => canCastle(mv, chess))
       .map(mv => oppCanTakeNewPos(mv, chess))
+      .map(mv => oppCanCheckmate(mv, chess))
       .map(mv => canEnableMoves(mv, chess))
+      .map(mv => preventDraw(mv, chess))
       //.map(mv => pawnsFinishHim(mv, chess, color))
       .sort((a, b) =>
         b.value === a.value ? Math.random() - 0.5 : b.value - a.value
@@ -81,6 +127,17 @@ const moveman = ({ color = 'w', name = 'oskar', debug = false }) => ({
       )[0],
   name: () => name
 })
+
+const oppCanCheckmate = (mv, state) => {
+  state.move(mv)
+  const theyCheckMate = state.moves().find(mv => mv.includes('#'))
+  state.undo()
+
+  return decoratedMove(mv, theyCheckMate, {
+    value: weights.checkmate - 1,
+    meta: 'this moves enables their checkmate'
+  })
+}
 
 const pawnsFinishHim = (mv, state, color) => {
   const onlyKingLeft = total(state, opponent[color]) === weights.king
@@ -151,5 +208,15 @@ const canCastle = (mv, state) =>
     value: weights.castle,
     meta: 'wow castle'
   })
+//TODO know if this works since history doesn't
+const preventDraw = (mv, state) => {
+  state.move(mv)
+  const isDraw = state.in_draw()
+  state.undo()
+  return decoratedMove(mv, isDraw, {
+    value: weights.draw,
+    meta: "let's not draw"
+  })
+}
 
 module.exports = color => moveman({ color, debug: false })
