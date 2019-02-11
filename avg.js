@@ -1,7 +1,7 @@
 const Chess = require('chess.js').Chess
 
 const whitePlayer = require('./' + process.argv[2])('w')
-const blackPlayer = require('./' + process.argv[3])('b') || 'RandomBot.js'
+const blackPlayer = require('./' + (process.argv[3] || 'RandomBot.js'))('b')
 const matchesCount = parseInt(process.argv[4]) || 10
 
 let whiteTimeArray = []
