@@ -35,7 +35,7 @@ for (var i = 0; i < matchesCount; i++) {
     }
 
     if (chess.fen() != prevFen) {
-      console.log('Fen changed,', chess.turn(), 'cheated!')
+      console.log('Fen changed,', new Chess(prevFen).turn(), 'cheated!')
       invalidMatchData.push({
         turn: chess.turn(),
         move: playerMove,
