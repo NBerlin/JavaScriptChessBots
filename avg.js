@@ -18,6 +18,7 @@ for (var i = 0; i < matchesCount; i++) {
   const chess = new Chess()
   let whiteTime = 0
   let blackTime = 0
+  let invalid = false
   while (!chess.game_over()) {
     let playerMove
     const temp = Date.now()
@@ -43,6 +44,7 @@ for (var i = 0; i < matchesCount; i++) {
         validMoves: chess.moves()
       })
       invalidMatches += 1
+      invalid = true
       break
     }
 
@@ -53,6 +55,7 @@ for (var i = 0; i < matchesCount; i++) {
         validMoves: chess.moves()
       })
       invalidMatches += 1
+      invalid = true
       break
     }
   }
@@ -60,8 +63,8 @@ for (var i = 0; i < matchesCount; i++) {
   whiteTimeArray.push(whiteTime)
   blackTimeArray.push(blackTime)
 
-  if (chess.in_checkmate()) {
-    if (turn != 'w') {
+  if (!invalid && chess.in_checkmate()) {
+    if (chess.turn() != 'w') {
       whiteVictories += 1
     } else {
       blackVictories += 1
