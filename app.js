@@ -12,8 +12,7 @@ while (!chess.game_over()) {
   let playerMove
   const prevFen = chess.fen()
   const temp = Date.now()
-  const turn = chess.turn()
-  if (turn == 'w') {
+  if (chess.turn() == 'w') {
     playerMove = player1.makeMove(chess)
     timePlayer1 += Date.now() - temp
   } else {
@@ -22,7 +21,8 @@ while (!chess.game_over()) {
   }
 
   if (chess.fen() != prevFen) {
-    console.log('Fen changed,', new Chess(prevFen).turn(), 'cheated!')
+    chess = new Chess(prevFen)
+    console.log('Fen changed,', chess.turn(), 'cheated!')
     break
   }
 
@@ -46,7 +46,7 @@ if (!arg) {
 }
 
 if (chess.in_checkmate()) {
-  if (turn != 'w') {
+  if (chess.turn() != 'w') {
     console.log('White Won!')
   } else {
     console.log('Black Won!')
