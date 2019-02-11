@@ -11,12 +11,18 @@ let timePlayer2 = 0
 while (!chess.game_over()) {
   let playerMove
   const temp = Date.now()
+  const prevFen = chess.fen()
   if (chess.turn() == 'w') {
-    playerMove = player1.makeMove(new Chess(chess.fen()))
+    playerMove = player1.makeMove(chess)
     timePlayer1 += Date.now() - temp
   } else {
-    playerMove = player2.makeMove(new Chess(chess.fen()))
+    playerMove = player2.makeMove(chess)
     timePlayer2 += Date.now() - temp
+  }
+
+  if (chess.fen() != prevFen) {
+    console.log('Fen changed,', chess.turn(), 'cheated!')
+    break
   }
 
   if (!chess.move(playerMove)) {

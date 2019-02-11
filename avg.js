@@ -18,19 +18,31 @@ for (var i = 0; i < matchesCount; i++) {
   const chess = new Chess()
   let whiteTime = 0
   let blackTime = 0
+  const prevFen = chess.fen()
   while (!chess.game_over()) {
     let playerMove
     const temp = Date.now()
     if (chess.turn() == 'w') {
-      playerMove = whitePlayer.makeMove(new Chess(chess.fen()))
+      playerMove = whitePlayer.makeMove(chess)
       const delta = Date.now() - temp
       whiteMoveTimeArray.push(delta)
       whiteTime += delta
     } else {
-      playerMove = blackPlayer.makeMove(new Chess(chess.fen()))
+      playerMove = blackPlayer.makeMove(chess)
       const delta = Date.now() - temp
       blackMoveTimeArray.push(delta)
       blackTime += delta
+    }
+
+    if (chess.fen() != prevFen) {
+      console.log('Fen changed,', chess.turn(), 'cheated!')
+      invalidMatchData.push({
+        turn: chess.turn(),
+        move: playerMove,
+        validMoves: chess.moves()
+      })
+      invalidMatches += 1
+      break
     }
 
     if (!chess.move(playerMove)) {
