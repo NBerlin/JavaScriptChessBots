@@ -32,41 +32,8 @@ class NickiBot {
     return pieces
   }
 
-  testMoves(chessMoves) {
-    let ggchecker = this.checkCheckMate(chessMoves)
-    if (ggchecker) {
-      return ggchecker
-    }
-    let piecesOnBoard = this.getPiecesOnBoard()
-    if (piecesOnBoard.length < 10) {
-      chessMoves = this.setValuesOnMoves(chessMoves, 5)
-    } else {
-      chessMoves = this.setValuesOnMoves(chessMoves, 2)
-    }
-
-    let highestValue = chessMoves.reduce((obj1, obj2) =>
-      obj1.rekursionValue >= obj2.rekursionValue ? obj1 : obj2
-    ).rekursionValue
-    chessMoves = chessMoves.filter(obj1 => obj1.rekursionValue === highestValue)
-
-    if (chessMoves.length > 1) {
-      if (piecesOnBoard.length < 14) {
-        return chessMoves.reduce((obj1, obj2) =>
-          pieceValues[obj1.piece] < pieceValues[obj2.piece] ? obj1 : obj2
-        )
-      }
-    }
-
-    return chessMoves[0]
-  }
-
-  setValuesOnMoves(chessMoves, depth) {
-    let newChessMoves = chessMoves.map(move => ({
-      ...move,
-      rekursionValue: this.rekursionMove(move, depth)
-    }))
-    return newChessMoves
-  }
+  
+  
   checkCheckMate(chessMoves) {
     chessMoves = chessMoves.filter(move => move.san.includes('#'))[0]
     if (chessMoves) {
@@ -119,6 +86,42 @@ class NickiBot {
     let temp = this.testMoves(chessCopy.moves({ verbose: true }))
     return temp.san
   }
+  testMoves(chessMoves) {
+    let ggchecker = this.checkCheckMate(chessMoves)
+    if (ggchecker) {
+      return ggchecker
+    }
+
+
+    chessMoves = this.setValuesOnMoves(chessMoves);
+    return chessMoves.reduce((obj1, obj2) =>
+    obj1.rekursionValue >= obj2.rekursionValue ? obj1 : obj2
+  )
+  }
+  setValuesOnMoves(chessMoves) {
+    let newChessMoves = chessMoves.map(move => ({
+      ...move,
+      tradeValue: this.tradeValue(move)
+    }));
+    return newChessMoves
+  }
+  tradeValue(move){
+    let value = pieceValues[move.captured];
+    chess.move(move.san)
+    let chessMoves=chess.moves({verbose:true})
+    .filter(obj1=>obj1.captured);
+    if(chessMoves){
+      if(chess.turn()==this.color){
+        value-=Math.max(chessMoves.map(obj1=>tradeValue(obj1)))
+      }
+      else{
+        value+=Math.max(chessMoves.map(obj1=>tradeValue(obj1)))
+      }
+
+      
+    }
+  }
+
 }
 const create = color => new NickiBot(color)
 module.exports = create
