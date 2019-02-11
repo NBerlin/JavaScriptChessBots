@@ -23,7 +23,7 @@ for (var i = 0; i < matchesCount; i++) {
     const temp = Date.now()
     const prevFen = chess.fen()
     const turn = chess.turn()
-    if (trun == 'w') {
+    if (turn == 'w') {
       playerMove = whitePlayer.makeMove(chess)
       const delta = Date.now() - temp
       whiteMoveTimeArray.push(delta)
@@ -38,7 +38,7 @@ for (var i = 0; i < matchesCount; i++) {
     if (chess.fen() != prevFen) {
       console.log('Fen changed,', new Chess(prevFen).turn(), 'cheated!')
       invalidMatchData.push({
-        turn: trun,
+        turn: turn,
         move: playerMove,
         validMoves: chess.moves()
       })
@@ -48,7 +48,7 @@ for (var i = 0; i < matchesCount; i++) {
 
     if (!chess.move(playerMove)) {
       invalidMatchData.push({
-        turn: trun,
+        turn: turn,
         move: playerMove,
         validMoves: chess.moves()
       })
@@ -61,7 +61,7 @@ for (var i = 0; i < matchesCount; i++) {
   blackTimeArray.push(blackTime)
 
   if (chess.in_checkmate()) {
-    if (trun != 'w') {
+    if (turn != 'w') {
       whiteVictories += 1
     } else {
       blackVictories += 1

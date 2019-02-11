@@ -13,7 +13,7 @@ while (!chess.game_over()) {
   const prevFen = chess.fen()
   const temp = Date.now()
   const turn = chess.turn()
-  if (trun == 'w') {
+  if (turn == 'w') {
     playerMove = player1.makeMove(chess)
     timePlayer1 += Date.now() - temp
   } else {
@@ -46,7 +46,7 @@ if (!arg) {
 }
 
 if (chess.in_checkmate()) {
-  if (trun != 'w') {
+  if (turn != 'w') {
     console.log('White Won!')
   } else {
     console.log('Black Won!')
