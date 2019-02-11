@@ -46,7 +46,7 @@ if (!arg) {
 }
 
 if (chess.in_checkmate()) {
-  if (turn != 'w') {
+  if (chess.turn() != 'w') {
     console.log('White Won!')
   } else {
     console.log('Black Won!')
