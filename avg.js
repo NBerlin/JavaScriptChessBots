@@ -18,10 +18,10 @@ for (var i = 0; i < matchesCount; i++) {
   const chess = new Chess()
   let whiteTime = 0
   let blackTime = 0
-  const prevFen = chess.fen()
   while (!chess.game_over()) {
     let playerMove
     const temp = Date.now()
+    const prevFen = chess.fen()
     if (chess.turn() == 'w') {
       playerMove = whitePlayer.makeMove(chess)
       const delta = Date.now() - temp
