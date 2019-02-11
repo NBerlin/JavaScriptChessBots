@@ -119,14 +119,15 @@ const moveman = ({ color = 'w', name = 'oskar', debug = false }) => ({
       .map(mv => canEnableMoves(mv, chess))
       .map(mv => preventDraw(mv, chess))
       //.map(mv => pawnsFinishHim(mv, chess, color))
-      .sort((a, b) =>
-        b.value === a.value ? Math.random() - 0.5 : b.value - a.value
-      )
-      .map(
-        mv => (debug && console.log(mv.value, mv.piece, mv.to, mv.meta)) || mv
-      )[0],
+      .sort(sorter)
+      .map(mv => mapDebug(mv, debug))[0],
   name: () => name
 })
+
+const mapDebug = (mv, debug) =>
+  (debug && console.log(mv.value, mv.piece, mv.to, mv.meta)) || mv
+const sorter = (a, b) =>
+  b.value === a.value ? Math.random() - 0.5 : b.value - a.value
 
 const oppCanCheckmate = (mv, state) => {
   state.move(mv)
@@ -152,6 +153,10 @@ const canEnableMoves = (mv, state) => {
   state.move(mv)
   // Opp makes random move
   const oppMovs = state.moves()
+  if (oppMovs.length === 0) {
+    state.undo() // prevent cheating
+    return mv
+  }
   state.move(oppMovs[Math.floor(Math.random() * oppMovs.length)])
   const score = state.moves().length - before
   state.undo()

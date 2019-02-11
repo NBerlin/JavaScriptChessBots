@@ -2,7 +2,7 @@ const Chess = require('chess.js').Chess
 const chess = new Chess()
 
 const player1 = require('./' + process.argv[2])('w')
-const player2 = require('./' + process.argv[3])('b')
+const player2 = require('./' + (process.argv[3] || 'RandomBot.js'))('b')
 const arg = process.argv[4]
 
 let timePlayer1 = 0
