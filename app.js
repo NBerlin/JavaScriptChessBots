@@ -41,10 +41,6 @@ while (!chess.game_over()) {
   }
 }
 
-if (!arg) {
-  prettyPrint(chess)
-}
-
 if (chess.in_checkmate()) {
   if (chess.turn() != 'w') {
     console.log('White Won!')
@@ -64,7 +60,7 @@ console.log('time (s): ', timePlayer2 / 1000.0)
 const prettyPrint = chess =>
   console.log(
     chess
-      .asci()
+      .ascii()
       .split('')
       .map(item => unicodemap[item] || item)
       .join('')
@@ -82,4 +78,8 @@ const unicodemap = {
   b: '\u265D',
   n: '\u265E',
   p: '\u265F'
+}
+
+if (!arg) {
+  prettyPrint(chess)
 }
