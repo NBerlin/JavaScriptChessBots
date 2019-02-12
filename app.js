@@ -33,16 +33,12 @@ while (!chess.game_over()) {
 
   if (arg == 'slow' || arg == 'show') {
     console.log(chess.fen())
-    console.log(chess.ascii())
+    prettyPrint(chess)
   }
 
   if (arg == 'slow') {
     for (let i = 1000000000; i >= 0; i--) {}
   }
-}
-
-if (!arg) {
-  console.log(chess.ascii())
 }
 
 if (chess.in_checkmate()) {
@@ -60,3 +56,30 @@ console.log(player1.name(), ' (white)')
 console.log('time (s): ', timePlayer1 / 1000.0, '\n')
 console.log(player2.name(), ' (black)')
 console.log('time (s): ', timePlayer2 / 1000.0)
+
+const prettyPrint = chess =>
+  console.log(
+    chess
+      .ascii()
+      .split('')
+      .map(item => unicodemap[item] || item)
+      .join('')
+  )
+const unicodemap = {
+  K: '\u2654',
+  Q: '\u2655',
+  R: '\u2656',
+  B: '\u2657',
+  N: '\u2658',
+  P: '\u2659',
+  k: '\u265A',
+  q: '\u265B',
+  r: '\u265C',
+  b: '\u265D',
+  n: '\u265E',
+  p: '\u265F'
+}
+
+if (!arg) {
+  prettyPrint(chess)
+}
