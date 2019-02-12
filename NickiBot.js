@@ -281,7 +281,10 @@ class NickiBot {
         return -100000000
       }
     }
-    chessMoves = chessMoves.filter(obj1 => obj1.captured)
+    if(this.getPiecesOnBoard.length<15){
+      chessMoves = chessMoves.filter(obj1 => obj1.captured);
+    }
+    
 
     if (chessMoves && depth < 2) {
       if (chess.turn() == this.color) {
